@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:learn_wise/utils/app_styles.dart';
-import 'sign_up_page.dart';
+import 'package:learn_wise/view/auth/sign_up_page.dart';
+import 'package:learn_wise/view/main_navigation_page.dart';
+import 'package:learn_wise/viewmodels/auth_view_model.dart';
+import 'package:learn_wise/widgets/dialogs/error_dialog.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatelessWidget {
   final TextEditingController _emailController = TextEditingController();
@@ -9,6 +13,8 @@ class LoginPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authViewModel = Provider.of<AuthViewModel>(context);
+
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
@@ -16,7 +22,7 @@ class LoginPage extends StatelessWidget {
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisSize: MainAxisSize.min, // İçeriği sıkıştırmak için
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
@@ -54,29 +60,38 @@ class LoginPage extends StatelessWidget {
                 const SizedBox(height: 30),
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        print('Logged in with email: ${_emailController.text}');
+                        await authViewModel.login(
+                          _emailController.text,
+                          _passwordController.text,
+                        );
+
+                        if (authViewModel.errorMessage == null) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MainNavigationPage(),
+                            ),
+                          );
+                        } else {
+                          // Giriş başarısızsa hata mesajını gösteriyoruz.
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return ErrorDialog(
+                                errorMessage: authViewModel.errorMessage!,
+                              );
+                            },
+                          );
+                        }
                       }
                     },
                     style: AppStyles.primaryButtonStyle.copyWith(
                       backgroundColor:
-                          MaterialStateProperty.all(AppStyles.accentColor),
+                          WidgetStateProperty.all(AppStyles.accentColor),
                     ),
                     child: const Text('Login'),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _socialMediaButton(Icons.g_mobiledata),
-                      const SizedBox(width: 20),
-                      _socialMediaButton(Icons.facebook),
-                      const SizedBox(width: 20),
-                      _socialMediaButton(Icons.alternate_email),
-                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -98,17 +113,6 @@ class LoginPage extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _socialMediaButton(IconData icon) {
-    return CircleAvatar(
-      radius: 20,
-      backgroundColor: Colors.black12,
-      child: Icon(
-        icon,
-        color: Colors.black,
       ),
     );
   }
