@@ -8,14 +8,21 @@ class AuthViewModel extends ChangeNotifier {
   String? _token;
   String? _userId;
   Map<String, dynamic>? _userData;
+  bool _isLoading = false; // Loading durumu
 
   String? get errorMessage => _errorMessage;
   String? get token => _token;
   String? get userId => _userId;
   Map<String, dynamic>? get userData => _userData;
+  bool get isLoading => _isLoading; // Loading durumunu döndürüyoruz
 
   void clearErrorMessage() {
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  void setLoading(bool value) {
+    _isLoading = value;
     notifyListeners();
   }
 

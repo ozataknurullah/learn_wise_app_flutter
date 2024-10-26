@@ -59,40 +59,85 @@ class LoginPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 Center(
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        await authViewModel.login(
-                          _emailController.text,
-                          _passwordController.text,
-                        );
-
-                        if (authViewModel.errorMessage == null) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MainNavigationPage(),
-                            ),
-                          );
-                        } else {
-                          // Giriş başarısızsa hata mesajını gösteriyoruz.
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return ErrorDialog(
-                                errorMessage: authViewModel.errorMessage!,
+                  child: authViewModel.isLoading
+                      ? CircularProgressIndicator() // Loading animasyonu
+                      : ElevatedButton(
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              authViewModel.setLoading(true); // Loading başlat
+                              await authViewModel.login(
+                                _emailController.text,
+                                _passwordController.text,
                               );
-                            },
-                          );
-                        }
-                      }
-                    },
-                    style: AppStyles.primaryButtonStyle.copyWith(
-                      backgroundColor:
-                          WidgetStateProperty.all(AppStyles.accentColor),
-                    ),
-                    child: const Text('Login'),
-                  ),
+
+                              authViewModel.setLoading(false); // Loading durdur
+
+                              if (authViewModel.errorMessage == null) {
+                                // Başarılı bir giriş sonrası kullanıcıya pop-up mesaj gösteriyoruz
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (BuildContext context) {
+                                    Future.delayed(Duration(seconds: 1), () {
+                                      Navigator.of(context)
+                                          .pop(); // Pop-up kaybolsun
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              MainNavigationPage(),
+                                        ),
+                                      );
+                                    });
+                                    return Dialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      backgroundColor: AppStyles.accentColor,
+                                      child: const Padding(
+                                        padding: EdgeInsets.all(20.0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.check_circle_outline,
+                                              color: Colors.white,
+                                              size: 24,
+                                            ),
+                                            SizedBox(height: 16),
+                                            Text(
+                                              'Giriş Başarılı!',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              } else {
+                                // Giriş başarısızsa hata mesajını gösteriyoruz.
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return ErrorDialog(
+                                      errorMessage: authViewModel.errorMessage!,
+                                    );
+                                  },
+                                );
+                              }
+                            }
+                          },
+                          style: AppStyles.primaryButtonStyle.copyWith(
+                            backgroundColor:
+                                WidgetStateProperty.all(AppStyles.accentColor),
+                          ),
+                          child: const Text('Login'),
+                        ),
                 ),
                 const SizedBox(height: 20),
                 Center(

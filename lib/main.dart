@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         scaffoldBackgroundColor: AppStyles.backgroundColor,
       ),
-      home: LoginPage(), // Uygulamanın açılışında splash ekranı gösterecek
+      home: SignUpPage(), // Uygulamanın açılışında splash ekranı gösterecek
     );
   }
 }
